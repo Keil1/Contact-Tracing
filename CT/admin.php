@@ -24,15 +24,23 @@
     </div>
     <?php
 
-    $con=mysqli_connect("localhost","root","","contact");
-    // Check connection
-    if (mysqli_connect_errno())
-    {
-    echo "Failed to connect to MySQL: " . mysqli_connect_error();
-    }
+    $url = 'https://attendance-system-app.herokuapp.com/api/visitors';
+    $curl = curl_init();
+    // OPTIONS:
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+        'Authorization: da37dbde-49f8-49bc-9340-2e04ecb9fc6a',
+        'Content-Type: application/json',
+    ));
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+    // EXECUTE:
+    $res = curl_exec($curl);
+    if(!$res){die("Connection Failure");}
+    curl_close($curl);
 
-    $result = mysqli_query($con,"SELECT * FROM tracing");
-    
+    $response = json_decode($res, true);
+    $data = $response['result'];
 ?>
     <div class="table-responsive">
       <table class="table table-striped table-bordered table-hover" id = "table_data">
@@ -46,24 +54,20 @@
             <th scope="col"><center>Date</center></th>
           </tr>
 <?php
-          while($row = mysqli_fetch_array($result))
 
-{
-echo "<tr>";
-echo "<td>" . $row['name'] . "</td>";
-echo "<td>" . $row['age'] . "</td>";
-echo "<td>" . $row['address'] . "</td>";
-echo "<td>" . $row['contact'] . "</td>";
-echo "<td>" . $row['time'] . "</td>";
-echo "<td>" . $row['date'] . "</td>";
-
-echo "</tr>";
-
-
-
+foreach($data as $user){
+    echo "<tr>";
+    echo "<td>" . $user['name'] . "</td>";
+    echo "<td>" . $user['age'] . "</td>";
+    echo "<td>" . $user['address'] . "</td>";
+    echo "<td>" . $user['contactNumber'] . "</td>";
+    echo "<td>" . date('h:i:s', strtotime($user['time'])) . "</td>";
+    echo "<td>" . date('Y-m-d', strtotime($user['date'])) . "</td>";
+    echo "</tr>";
 }
+
+
 echo "</table>";
-mysqli_close($con);
 ?>
         </thead>
 </body>
